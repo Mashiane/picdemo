@@ -1,0 +1,515 @@
+<!DOCTYPE html>
+<html manifest="index.appcache">
+<head>
+<title>PicDemo</title>
+<meta charset='utf-8'/>
+<meta name='format-detection' content='telephone=no' />
+<meta name='viewport' content='width=device-width, initial-scale=1, user-scalable=no, minimum-scale=1, maximum-scale=1'/>
+<meta name='apple-mobile-web-app-cabable' content='YES'/>
+<meta name='mobile-web-app-capable' content='yes'/>
+<meta name='apple-mobile-web-app-title' content='PicDemo'/>
+<meta name='apple-mobile-web-app-status-bar-style' content='black-translucent.'/>
+<meta name='version' content='1.00' />
+<meta name='generator' content='JQM.Show 1.00' />
+<meta name='date' content='2015-02-23 01:40' />
+<meta name='copyright' content='Anele Mbanga' />
+<meta name='author' content='Anele Mbanga' />
+<meta name='email' content='' />
+<meta name='website' content='' />
+<meta name='description' content='' />
+<link rel="apple-touch-icon" href="apps.png">
+<link rel="icon" type="image/png" href="apps.png">
+<link rel="shortcut icon" type="image/png" href="apps.png">
+<link rel="apple-touch-icon" sizes="57x57" href="apps57.png">
+<link rel="apple-touch-icon" sizes="72x72" href="apps72.png">
+<link rel="apple-touch-icon" sizes="80x80" href="apps80.png">
+<link rel="apple-touch-icon" sizes="114x114" href="apps114.png">
+<link rel="apple-touch-icon-precomposed" href="appsIconPreComposed.png">
+<link rel="apple-touch-startup-image" href="appsIconStartUp320by460.png">
+<link rel="stylesheet" href="jquerym.css">
+<link rel="stylesheet" href="listview-grid.css">
+<script src="jquery.js" type="text/javascript"></script>
+<script src="jquerym.js" type="text/javascript"></script>
+<script src="fastclick.js" type="text/javascript"></script>
+<!--[if IE]>
+<script src="html5.js" type="text/javascript"></script>
+<![endif]-->
+<script src="cordova.js" type="text/javascript"></script>
+<style>.ui-header .ui-title, .ui-footer .ui-title {margin-right: 0 !important; margin-left: 0 !important;}
+</style>
+<script>$(function(){
+// define the application
+var PicDemo = {};
+(function(app){
+// variable definitions go here
+var SiteVisitLi = '<li ><a href="#pgEditSiteVisit?Title=LINK">ID</a></li>';
+var SiteVisitHdr = '<li data-role="list-divider">SiteVisitHdr</li>';
+var noSiteVisit = '<li id="noSiteVisit">You have no site visits</li>';
+
+
+app.init = function(){
+FastClick.attach(document.body);
+app.BindDevice();
+app.SiteVisitsbindings();
+app.checkForSiteVisitsStorage();
+$('#msgboxyes').on('click', function(e){
+e.preventDefault();
+e.stopImmediatePropagation();
+var yesmethod = $('#msgboxyes').data('method');
+var yesid = $('#msgboxyes').data('id');
+app[yesmethod](yesid);
+});
+
+$('#msgboxno').on('click', function(e){
+e.preventDefault();
+e.stopImmediatePropagation();
+var toPage = $('#msgboxno').data('topage');
+// show the page to display after a record is deleted
+$.mobile.changePage('#'+toPage, {transition: 'slide'});
+});
+
+$('#alertboxok').on('click', function(e){
+e.preventDefault();
+e.stopImmediatePropagation();
+var toPage = $('#alertboxok').data('topage');
+// show the page to display after ok is clicked
+$.mobile.changePage('#'+toPage, {transition: 'slide'});
+});
+
+$(document).on('click', '#sbItems a', function(e){
+e.preventDefault();
+e.stopImmediatePropagation();
+var href = $(this).attr('href');
+$.mobile.changePage(href, {transition: 'slide'});
+});
+
+};
+
+app.SiteVisitsbindings = function(){
+$(document).on('click', '#pgSiteVisitList a', function(e){
+e.preventDefault();
+e.stopImmediatePropagation();
+var href = $(this)[0].href.match(/\?.*$/)[0];
+var Title = href.replace(/^\?Title=/,'');
+$.mobile.changePage('#pgEditSiteVisit', {transition: 'slide'});
+app.editSiteVisit(Title);
+});
+
+$(document).on('pagebeforechange', function(e, data){
+var toPage = data.toPage[0].id;
+if(toPage == 'pgSiteVisit'){
+// restart the storage check
+app.checkForSiteVisitsStorage();
+}
+});
+
+// bind the back button of the list
+$('#pgSiteVisitBack').on('click', function(e){
+e.preventDefault();
+e.stopImmediatePropagation();
+// move to the add new record screen
+$.mobile.changePage('#pgMenu', {transition: 'slide'});
+});
+// click new on listing page
+$('#pgSiteVisitNew').on('click', function(e){
+e.preventDefault();
+e.stopImmediatePropagation();
+$('#pgAddSiteVisit').data('from', pgSiteVisit);
+// move to the add new record screen
+$.mobile.changePage('#pgAddSiteVisit', {transition: 'slide'});
+});
+// click back button of new record page
+$('#pgAddSiteVisitBack').on('click', function(e){
+e.preventDefault();
+e.stopImmediatePropagation();
+//which page are we coming from, if from sign in go back to it
+var pgFrom = $('#pgAddSiteVisit').data('from');
+switch (pgFrom) {
+case "pgSignIn":
+$.mobile.changePage('#pgSignIn', {transition: 'slide'});
+break;
+default:
+// go back to the listing screen
+$.mobile.changePage('#pgSiteVisit', {transition: 'slide'});
+}
+});
+// click save button of new record
+$('#pgAddSiteVisitSave').on('click', function(e){
+e.preventDefault();
+e.stopImmediatePropagation();
+// save the SiteVisit
+var SiteVisitRec;
+SiteVisitRec = pgAddSiteVisitGetRec();
+app.addSiteVisit(SiteVisitRec);
+});
+// click back button of edit record page
+$('#pgEditSiteVisitBack').on('click', function(e){
+e.preventDefault();
+e.stopImmediatePropagation();
+// go back to the listing screen
+$.mobile.changePage('#pgSiteVisit', {transition: 'slide'});
+});
+// click update when editing a record
+$('#pgEditSiteVisitUpdate').on('click', function(e){
+e.preventDefault();
+e.stopImmediatePropagation();
+// save the SiteVisit
+var SiteVisitRecNew;
+SiteVisitRecNew = pgEditSiteVisitGetRec();
+app.updateSiteVisit(SiteVisitRecNew);
+});
+// click delete on edit page
+$('#pgEditSiteVisitDelete').on('click', function(e){
+e.preventDefault();
+e.stopImmediatePropagation();
+var Title = $('#pgEditSiteVisitTitle').val();
+Title = Title.replace(/-/g,' ');
+Title = Title.replace(/-/g,' ');
+$('#msgboxheader h1').text('Confirm Delete');
+$('#msgboxtitle').text(Title);
+$('#msgboxprompt').text('Are you sure that you want to delete this sitevisit?');
+$('#msgboxyes').data('method', 'deleteSiteVisit');
+Title = Title.replace(/ /g,'-');
+$('#msgboxyes').data('id', Title);
+$('#msgboxno').data('topage', 'pgEditSiteVisit');
+$.mobile.changePage('#msgbox', {transition: 'pop'});
+});
+
+$('#pgAddSiteVisitPictureTakePicture').on('click', function(e){
+e.preventDefault();
+e.stopImmediatePropagation();
+app.pgAddSiteVisitPictureGet();
+});
+
+$('#pgEditSiteVisitPictureTakePicture').on('click', function(e){
+e.preventDefault();
+e.stopImmediatePropagation();
+app.pgEditSiteVisitPictureGet();
+});
+
+};
+//get the record to be saved and put it in a record array
+function pgAddSiteVisitGetRec(){
+//define the new record
+var SiteVisitRec
+SiteVisitRec = {};
+SiteVisitRec.Title = $('#pgAddSiteVisitTitle').val();
+SiteVisitRec.Description = $('#pgAddSiteVisitDescription').val();
+SiteVisitRec.Picture = $('#pgAddSiteVisitPicture').val();
+return SiteVisitRec;
+}
+
+//get the record to be saved and put it in a record array
+function pgEditSiteVisitGetRec(){
+//define the new record
+var SiteVisitRec
+SiteVisitRec = {};
+SiteVisitRec.Title = $('#pgEditSiteVisitTitle').val();
+SiteVisitRec.Description = $('#pgEditSiteVisitDescription').val();
+SiteVisitRec.Picture = $('#pgEditSiteVisitPicture').val();
+return SiteVisitRec;
+}
+
+//clear the forms for new data entry
+function pgAddSiteVisitClear(){
+$('#pgAddSiteVisitTitle').val('');
+$('#pgAddSiteVisitDescription').val('');
+$('#pgAddSiteVisitPicture').val('');
+}
+
+//clear the forms for new data entry
+function pgEditSiteVisitClear(){
+$('#pgEditSiteVisitTitle').val('');
+$('#pgEditSiteVisitDescription').val('');
+$('#pgEditSiteVisitPicture').val('');
+}
+
+//set camera options
+app.pgAddSiteVisitPictureGet = function(){
+var cameraOptions = {};
+cameraOptions.quality = 100;
+cameraOptions.destinationType = navigator.camera.DestinationType.FILE_URI;
+cameraOptions.encodingType = Camera.EncodingType.PNG;
+navigator.camera.getPicture(app.pgAddSiteVisitPictureSuccess, app.pgAddSiteVisitPictureError, cameraOptions);
+};
+app.pgAddSiteVisitPictureSuccess = function(photoUri){
+document.getElementById('pgAddSiteVisitPicture').src = photoUri;
+};
+
+app.pgAddSiteVisitPictureError = function(){
+};
+
+
+//set camera options
+app.pgEditSiteVisitPictureGet = function(){
+var cameraOptions = {};
+cameraOptions.quality = 100;
+cameraOptions.destinationType = navigator.camera.DestinationType.FILE_URI;
+cameraOptions.encodingType = Camera.EncodingType.PNG;
+navigator.camera.getPicture(app.pgEditSiteVisitPictureSuccess, app.pgEditSiteVisitPictureError, cameraOptions);
+};
+app.pgEditSiteVisitPictureSuccess = function(photoUri){
+document.getElementById('pgEditSiteVisitPicture').src = photoUri;
+};
+
+app.pgEditSiteVisitPictureError = function(){
+};
+
+
+app.addSiteVisit = function(SiteVisitRec){
+// get SiteVisit records.
+var SiteVisitsObj = app.getSiteVisits();
+// define a record object to store the current details
+var Title = SiteVisitRec.Title;
+Title = Title.replace(/ /g,'-');
+SiteVisitsObj[Title] = SiteVisitRec;
+localStorage['picdemo-site visits'] = JSON.stringify(SiteVisitsObj);
+// clear the form fields
+pgAddSiteVisitClear();
+//which page are we coming from, if from sign in go back to it
+var pgFrom = $('#pgAddSiteVisit').data('from');
+switch (pgFrom) {
+case "pgSignIn":
+$.mobile.changePage('#pgSignIn', {transition: 'slide'});
+break;
+}
+};
+
+app.editSiteVisit = function(Title){
+// get SiteVisit records.
+var SiteVisitsObj = app.getSiteVisits();
+// lookup specific SiteVisit
+Title = Title.replace(/ /g,'-');
+var SiteVisitRec = SiteVisitsObj[Title];
+$('#pgEditSiteVisit').data('url', Title);
+$('#pgEditSiteVisitDelete').data('href', Title);
+$('#pgEditSiteVisitTitle').attr('readonly', 'readonly');
+$('#pgEditSiteVisitTitle').attr('data-clear-btn', 'false');
+$('#pgEditSiteVisitTitle').val(SiteVisitRec.Title);
+$('#pgEditSiteVisitDescription').val(SiteVisitRec.Description);
+$('#pgEditSiteVisitPicture').val(SiteVisitRec.Picture);
+};
+
+app.updateSiteVisit = function(SiteVisitRecNew){
+// get SiteVisit records.
+var SiteVisitsObj = app.getSiteVisits();
+// lookup specific SiteVisit
+var Title = SiteVisitRecNew.Title;
+Title = Title.replace(/ /g,'-');
+var SiteVisitRec = SiteVisitsObj[Title];
+// assign new values to read record
+SiteVisitRec.Title = SiteVisitRecNew.Title;
+SiteVisitRec.Description = SiteVisitRecNew.Description;
+SiteVisitRec.Picture = SiteVisitRecNew.Picture;
+SiteVisitsObj[Title] = SiteVisitRec;
+localStorage['picdemo-site visits'] = JSON.stringify(SiteVisitsObj);
+// clear the form fields
+pgEditSiteVisitClear();
+// show the page to display after a record is deleted
+$.mobile.changePage('#pgSiteVisit', {transition: 'slide'});
+};
+
+app.deleteSiteVisit = function(Title){
+// clear the set values// get the SiteVisit records from localStorage
+var SiteVisitsObj = app.getSiteVisits();
+// delete selected SiteVisit
+delete SiteVisitsObj[Title];
+// write it back to localStorage
+localStorage['picdemo-site visits'] = JSON.stringify(SiteVisitsObj);
+// show the page to display after a record is deleted
+$.mobile.changePage('#pgSiteVisit', {transition: 'slide'});
+};
+
+app.getSiteVisits = function(){
+// get SiteVisit records
+var SiteVisitsObj = localStorage['picdemo-site visits'];
+if (!SiteVisitsObj){
+SiteVisitsObj = {};
+localStorage['picdemo-site visits'] = JSON.stringify(SiteVisitsObj);
+} else {
+SiteVisitsObj = JSON.parse(SiteVisitsObj);
+}
+return SiteVisitsObj;
+};
+
+app.displaySiteVisits = function(){
+// get SiteVisit records.
+var SiteVisitsObj = app.getSiteVisits();
+// create an empty string to contain html
+var html = '';
+// make sure your iterators are properly scoped
+var n;
+// loop over notes
+for (n in SiteVisitsObj){
+var nLnk = n.replace(/-/g,' ');
+html += SiteVisitLi.replace(/ID/g,nLnk).replace(/LINK/g,n);
+}
+$('#pgSiteVisitList').html(SiteVisitHdr + html).listview('refresh');
+};
+
+app.checkForSiteVisitsStorage = function(){
+var SiteVisitsObj = app.getSiteVisits();
+// are there existing SiteVisit records?
+if (!$.isEmptyObject(SiteVisitsObj)) {
+// yes there are. pass them off to be displayed
+app.displaySiteVisits();
+} else {
+// nope, just show the placeholder
+$('#pgSiteVisitList').html(SiteVisitHdr + noSiteVisit).listview('refresh');
+}
+};
+
+app.BindDevice = function(){
+document.addEventListener('deviceready', app.onDeviceReady, false);
+};
+
+app.onDeviceReady = function(){
+var pictureSource = navigator.camera.PictureSourceType;
+var destinationType = navigator.camera.DestinationType;
+alert(pictureSource);
+alert(destinationType);
+};
+
+
+app.init();
+})(PicDemo);
+});
+
+</script>
+</head>
+<body><div id="pgSiteVisit" data-role="page">
+
+<header id="pgSiteVisitheader" data-role="header" data-position="fixed">
+<h1>Site Visits</h1>
+<a data-role="button" id="pgSiteVisitBack" data-icon="arrow-l" class="ui-btn-left">Back</a>
+<a data-role="button" id="pgSiteVisitNew" data-icon="plus" data-theme="b" class="ui-btn-right">New</a>
+</header>
+<div id="pgSiteVisitcontent" data-role="content" class="content">
+<ul data-role="listview" data-inset="true" id="pgSiteVisitList" data-autodividers="true" data-filter="true" data-filter-placeholder="Search Site Visits" data-filter-reveal="false">
+<li data-role="list-divider">SiteVisitHdr</li>
+<li id="noSiteVisit">You have no site visits</li>
+
+</ul>
+</div>
+
+<footer id="pgSiteVisitfooter" data-role="footer" data-position="fixed">
+<h1>Powered by JQM.Show © Anele Mbanga 2015</h1>
+</footer></div>
+
+<div id="pgAddSiteVisit" data-role="page">
+
+<header id="pgAddSiteVisitheader" data-role="header" data-position="fixed">
+<h1>Add SiteVisit</h1>
+<a data-role="button" id="pgAddSiteVisitBack" data-icon="arrow-l" class="ui-btn-left">Back</a>
+</header>
+<div id="pgAddSiteVisitcontent" data-role="content" class="content">
+<form action="/" method="post">
+<div data-role="fieldcontain">
+<label for="pgAddSiteVisitTitle" id="lblpgAddSiteVisitTitle">Title<span style='color:red;'>*</span></label>
+<input type="text" required="required" title="Enter title here." name="pgAddSiteVisitTitle" id="pgAddSiteVisitTitle" placeholder="Enter title here." data-clear-btn="true" value=""></input>
+</div>
+<div data-role="fieldcontain">
+<label for="pgAddSiteVisitDescription" id="lblpgAddSiteVisitDescription">Description<span style='color:red;'>*</span></label>
+<textarea name="pgAddSiteVisitDescription" id="pgAddSiteVisitDescription" placeholder="Enter description here." data-clear-btn="true" required="required"></textarea>
+</div>
+<div data-role="fieldcontain">
+<label for="pgAddSiteVisitPicture" id="lblpgAddSiteVisitPicture">Picture<span style='color:red;'>*</span></label>
+<img id="pgAddSiteVisitPicture" height="120" width="auto" src="Picture" alt="SiteVisitRec."></img>
+<div><button id="pgAddSiteVisitPictureTakePicture" class="ui-btn ui-corner-all ui-shadow">Take Picture</button>
+</div>
+<div><button id="pgAddSiteVisitPictureFromGallery" class="ui-btn ui-corner-all ui-shadow">Get From Gallery</button>
+</div>
+</div>
+<div><button type="submit" id="pgAddSiteVisitSave" class="ui-btn ui-corner-all ui-shadow ui-btn-b">Save SiteVisit</button>
+</div>
+</form>
+</div>
+
+</div>
+
+<div data-url="Title" id="pgEditSiteVisit" data-role="page">
+
+<header id="pgEditSiteVisitheader" data-role="header" data-position="fixed">
+<h1>Edit SiteVisit</h1>
+<a data-role="button" id="pgEditSiteVisitBack" data-icon="arrow-l" class="ui-btn-left">Back</a>
+<a data-role="button" data-href="ID" id="pgEditSiteVisitDelete" data-icon="delete" data-theme="b" class="ui-btn-right">Delete</a>
+</header>
+<div id="pgEditSiteVisitcontent" data-role="content" class="content">
+<form action="/" method="post">
+<div data-role="fieldcontain">
+<label for="pgEditSiteVisitTitle" id="lblpgEditSiteVisitTitle">Title<span style='color:red;'>*</span></label>
+<input readonly="readonly" data-clear-btn="true" autofocus="true" type="text" required="required" title="Enter title here." name="pgEditSiteVisitTitle" id="pgEditSiteVisitTitle" placeholder="Enter title here." value=""></input>
+</div>
+<div data-role="fieldcontain">
+<label for="pgEditSiteVisitDescription" id="lblpgEditSiteVisitDescription">Description<span style='color:red;'>*</span></label>
+<textarea name="pgEditSiteVisitDescription" id="pgEditSiteVisitDescription" placeholder="Enter description here." data-clear-btn="true" required="required"></textarea>
+</div>
+<div data-role="fieldcontain">
+<label for="pgEditSiteVisitPicture" id="lblpgEditSiteVisitPicture">Picture<span style='color:red;'>*</span></label>
+<img id="pgEditSiteVisitPicture" height="120" width="auto" src="Picture" alt="SiteVisitRec."></img>
+<div><button id="pgEditSiteVisitPictureTakePicture" class="ui-btn ui-corner-all ui-shadow">Take Picture</button>
+</div>
+<div><button id="pgEditSiteVisitPictureFromGallery" class="ui-btn ui-corner-all ui-shadow">Get From Gallery</button>
+</div>
+</div>
+<div><button type="submit" id="pgEditSiteVisitUpdate" class="ui-btn ui-corner-all ui-shadow ui-btn-b">Update SiteVisit</button>
+</div>
+</form>
+</div>
+
+</div>
+<div id="pgMenu" data-role="page" data-themeAddAttribute="b" class="my-page">
+
+<header id="pgMenuheader" data-role="header" data-position="fixed">
+<h1>PicDemo</h1>
+</header>
+<div id="pgMenucontent" data-role="content" class="content">
+<ul data-role="listview" data-inset="true" id="sbItems">
+<li data-icon="false"><a data-transition="slide" id="sbSiteVisit" href="#pgSiteVisit"><h2>Site Visits</h2><p>Maintain Site Visits</p><label id="lbl"></label><img height="120" width="auto" src="appblue.png" alt="Site Visits" class="ui-li-thumb"></img><span class="ui-li-aside">Site Visits</span></a></li>
+</ul>
+</div>
+
+</div>
+<section data-transition="pop" id="msgbox" data-role="dialog">
+
+<header id="msgboxheader" data-role="header" data-position="fixed">
+<h1>Confirm</h1>
+</header>
+<div id="msgboxcontent" data-role="content" class="content">
+<div id="msgboxtitle">
+</div>
+<br><div id="msgboxprompt">
+<p>Are you sure you want to delete this record?</p>
+</div>
+<br><div style="text-align: center;" id="msgboxbuttons" class="ui-grid-a">
+<div class="ui-block-a">
+<a data-method="" data-id="" data-topage="" id="msgboxyes" data-role="button" data-icon="check">Yes</a>
+</div>
+<div class="ui-block-b">
+<a data-method="" data-id="" data-topage="" id="msgboxno" data-role="button" data-icon="delete" data-theme="b">No</a>
+</div>
+</div>
+</div>
+
+</section>
+<section data-transition="pop" id="alertbox" data-role="dialog">
+
+<header id="alertboxheader" data-role="header" data-position="fixed">
+<h1>Error</h1>
+</header>
+<div id="alertboxcontent" data-role="content" class="content">
+<div id="alertboxtitle">
+</div>
+<br><div id="alertboxprompt">
+<p>An error has been encountered!</p>
+</div>
+<br><div style="text-align: center;" id="alertboxbuttons" class="ui-grid-solo">
+<div class="ui-block-a">
+<a data-method="" data-id="" data-topage="" id="alertboxok" data-role="button" data-icon="check" data-theme="b">Ok</a>
+</div>
+</div>
+</div>
+
+</section>
+</body>
+</html>
