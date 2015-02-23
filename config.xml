@@ -42,5 +42,11 @@ version = "1.0.100">
 <preference name="show-splash-screen-spinner" value="true" />
 <preference name="auto-hide-splash-screen" value="true" />
 <preference name="useBrowserHistory" value="true" />
-<preference name="exit-on-suspend" value="false" />
+<preference name="exit-on-suspend" value="false" />
+<gap:plugin name="org.apache.cordova.camera" />
+<gap:plugin name="org.apache.cordova.media-capture" />
+<gap:plugin name="org.apache.cordova.device" />
+<gap:plugin name="org.apache.cordova.media" />
+<gap:plugin name="org.apache.cordova.splashscreen" />
+<gap:plugin name="org.apache.cordova.dialogs" />
 </widget>
