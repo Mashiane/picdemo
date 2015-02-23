@@ -12,7 +12,7 @@
 <meta name='apple-mobile-web-app-status-bar-style' content='black-translucent.'/>
 <meta name='version' content='1.00' />
 <meta name='generator' content='JQM.Show 1.00' />
-<meta name='date' content='2015-02-23 15:39' />
+<meta name='date' content='2015-02-23 23:42' />
 <meta name='copyright' content='Anele Mbanga' />
 <meta name='author' content='Anele Mbanga' />
 <meta name='email' content='anele@mbangas.com' />
@@ -43,11 +43,17 @@
 var PicDemo = {};
 var pictureSource;
 var destinationType;
+var isPhoneGapReady = false;
 (function(app){
 // variable definitions go here
 var SiteVisitLi = '<li ><a href="#pgEditSiteVisit?Title=LINK">ID</a></li>';
 var SiteVisitHdr = '<li data-role="list-divider">SiteVisitHdr</li>';
 var noSiteVisit = '<li id="noSiteVisit">You have no site visits</li>';
+
+// variable definitions go here
+var LocationLi = '<li ><a href="#pgEditLocation?Title=LINK">ID</a></li>';
+var LocationHdr = '<li data-role="list-divider">LocationHdr</li>';
+var noLocation = '<li id="noLocation">You have no my locations</li>';
 
 
 app.init = function(){
@@ -55,6 +61,8 @@ FastClick.attach(document.body);
 app.BindDevice();
 app.SiteVisitsbindings();
 app.checkForSiteVisitsStorage();
+app.MyLocationsbindings();
+app.checkForMyLocationsStorage();
 $('#msgboxyes').on('click', function(e){
 e.preventDefault();
 e.stopImmediatePropagation();
@@ -239,6 +247,45 @@ app.pgAddSiteVisitPictureSuccess = function(photoUri){
 var img = document.getElementById('pgAddSiteVisitPicture');
 img.style.display = 'block';
 img.src = photoUri;
+app.pgAddSiteVisitPictureGetLocation();
+};
+//get the picture location
+app.pgAddSiteVisitPictureGetLocation = function(){
+// get the user's gps coordinates and display map
+//check if geolocation is supported first
+var mapObj = document.getElementById('pgAddSiteVisitPicturemap');
+if (!navigator.geolocation){
+mapObj.innerHTML = '<p>Geolocation Is Not supported by your browser</p>';
+$('#pgAddSiteVisitPictureLat').val();
+$('#pgAddSiteVisitPictureLng').val();
+return;
+}
+mapObj.innerHTML = '<p>Locating…</p>';
+// geolocation exists, find the locationvar options = {};
+options.maximumAge = 3000;
+options.timeout = 5000;
+options.enableHighAccuracy = true;
+navigator.geolocation.getCurrentPosition(app.pgAddSiteVisitPictureLoadMap, app.pgAddSiteVisitPictureGeoError, options);
+};
+//load the user co-ordinates
+app.pgAddSiteVisitPictureLoadMap = function(position){
+var latitude = position.coords.latitude;
+var longitude = position.coords.longitude;
+$('#pgAddSiteVisitPictureLat').val(latitude);
+
+$('#pgAddSiteVisitPictureLng').val(longitude);
+
+var mapObj = document.getElementById('pgAddSiteVisitPicturemap');
+var img = new Image();
+img.src = "http://maps.googleapis.com/maps/api/staticmap?center=" + latitude + "," + longitude + "&zoom=13&size=300x300&sensor=false";
+mapObj.appendChild(img);
+};
+// show error when we cant get the map.
+app.pgAddSiteVisitPictureGeoError = function(){
+var mapObj = document.getElementById('pgAddSiteVisitPicturemap');
+mapObj.innerHTML = 'Unable To retrieve your location';
+$('#pgAddSiteVisitPictureLat').val();
+$('#pgAddSiteVisitPictureLng').val();
 };
 
 app.pgAddSiteVisitPictureError = function(){
@@ -261,6 +308,45 @@ app.pgEditSiteVisitPictureSuccess = function(photoUri){
 var img = document.getElementById('pgEditSiteVisitPicture');
 img.style.display = 'block';
 img.src = photoUri;
+app.pgEditSiteVisitPictureGetLocation();
+};
+//get the picture location
+app.pgEditSiteVisitPictureGetLocation = function(){
+// get the user's gps coordinates and display map
+//check if geolocation is supported first
+var mapObj = document.getElementById('pgEditSiteVisitPicturemap');
+if (!navigator.geolocation){
+mapObj.innerHTML = '<p>Geolocation Is Not supported by your browser</p>';
+$('#pgEditSiteVisitPictureLat').val();
+$('#pgEditSiteVisitPictureLng').val();
+return;
+}
+mapObj.innerHTML = '<p>Locating…</p>';
+// geolocation exists, find the locationvar options = {};
+options.maximumAge = 3000;
+options.timeout = 5000;
+options.enableHighAccuracy = true;
+navigator.geolocation.getCurrentPosition(app.pgEditSiteVisitPictureLoadMap, app.pgEditSiteVisitPictureGeoError, options);
+};
+//load the user co-ordinates
+app.pgEditSiteVisitPictureLoadMap = function(position){
+var latitude = position.coords.latitude;
+var longitude = position.coords.longitude;
+$('#pgEditSiteVisitPictureLat').val(latitude);
+
+$('#pgEditSiteVisitPictureLng').val(longitude);
+
+var mapObj = document.getElementById('pgEditSiteVisitPicturemap');
+var img = new Image();
+img.src = "http://maps.googleapis.com/maps/api/staticmap?center=" + latitude + "," + longitude + "&zoom=13&size=300x300&sensor=false";
+mapObj.appendChild(img);
+};
+// show error when we cant get the map.
+app.pgEditSiteVisitPictureGeoError = function(){
+var mapObj = document.getElementById('pgEditSiteVisitPicturemap');
+mapObj.innerHTML = 'Unable To retrieve your location';
+$('#pgEditSiteVisitPictureLat').val();
+$('#pgEditSiteVisitPictureLng').val();
 };
 
 app.pgEditSiteVisitPictureError = function(){
@@ -368,6 +454,234 @@ $('#pgSiteVisitList').html(SiteVisitHdr + noSiteVisit).listview('refresh');
 }
 };
 
+app.MyLocationsbindings = function(){
+$(document).on('click', '#pgLocationList a', function(e){
+e.preventDefault();
+e.stopImmediatePropagation();
+var href = $(this)[0].href.match(/\?.*$/)[0];
+var Title = href.replace(/^\?Title=/,'');
+$.mobile.changePage('#pgEditLocation', {transition: 'slide'});
+app.editLocation(Title);
+});
+
+$(document).on('pagebeforechange', function(e, data){
+var toPage = data.toPage[0].id;
+if(toPage == 'pgLocation'){
+// restart the storage check
+app.checkForMyLocationsStorage();
+}
+});
+
+// bind the back button of the list
+$('#pgLocationBack').on('click', function(e){
+e.preventDefault();
+e.stopImmediatePropagation();
+// move to the add new record screen
+$.mobile.changePage('#pgMenu', {transition: 'slide'});
+});
+// click new on listing page
+$('#pgLocationNew').on('click', function(e){
+e.preventDefault();
+e.stopImmediatePropagation();
+$('#pgAddLocation').data('from', pgLocation);
+// move to the add new record screen
+$.mobile.changePage('#pgAddLocation', {transition: 'slide'});
+});
+// click back button of new record page
+$('#pgAddLocationBack').on('click', function(e){
+e.preventDefault();
+e.stopImmediatePropagation();
+//which page are we coming from, if from sign in go back to it
+var pgFrom = $('#pgAddLocation').data('from');
+switch (pgFrom) {
+case "pgSignIn":
+$.mobile.changePage('#pgSignIn', {transition: 'slide'});
+break;
+default:
+// go back to the listing screen
+$.mobile.changePage('#pgLocation', {transition: 'slide'});
+}
+});
+// click save button of new record
+$('#pgAddLocationSave').on('click', function(e){
+e.preventDefault();
+e.stopImmediatePropagation();
+// save the Location
+var LocationRec;
+LocationRec = pgAddLocationGetRec();
+app.addLocation(LocationRec);
+});
+// click back button of edit record page
+$('#pgEditLocationBack').on('click', function(e){
+e.preventDefault();
+e.stopImmediatePropagation();
+// go back to the listing screen
+$.mobile.changePage('#pgLocation', {transition: 'slide'});
+});
+// click update when editing a record
+$('#pgEditLocationUpdate').on('click', function(e){
+e.preventDefault();
+e.stopImmediatePropagation();
+// save the Location
+var LocationRecNew;
+LocationRecNew = pgEditLocationGetRec();
+app.updateLocation(LocationRecNew);
+});
+// click delete on edit page
+$('#pgEditLocationDelete').on('click', function(e){
+e.preventDefault();
+e.stopImmediatePropagation();
+var Title = $('#pgEditLocationTitle').val();
+Title = Title.replace(/-/g,' ');
+Title = Title.replace(/-/g,' ');
+$('#msgboxheader h1').text('Confirm Delete');
+$('#msgboxtitle').text(Title);
+$('#msgboxprompt').text('Are you sure that you want to delete this location?');
+$('#msgboxyes').data('method', 'deleteLocation');
+Title = Title.replace(/ /g,'-');
+$('#msgboxyes').data('id', Title);
+$('#msgboxno').data('topage', 'pgEditLocation');
+$.mobile.changePage('#msgbox', {transition: 'pop'});
+});
+
+
+
+};
+//get the record to be saved and put it in a record array
+function pgAddLocationGetRec(){
+//define the new record
+var LocationRec
+LocationRec = {};
+LocationRec.Title = $('#pgAddLocationTitle').val();
+LocationRec.Loc = $('#pgAddLocationLoc').val();
+return LocationRec;
+}
+
+//get the record to be saved and put it in a record array
+function pgEditLocationGetRec(){
+//define the new record
+var LocationRec
+LocationRec = {};
+LocationRec.Title = $('#pgEditLocationTitle').val();
+LocationRec.Loc = $('#pgEditLocationLoc').val();
+return LocationRec;
+}
+
+//clear the forms for new data entry
+function pgAddLocationClear(){
+$('#pgAddLocationTitle').val('');
+$('#pgAddLocationLoc').val('');
+}
+
+//clear the forms for new data entry
+function pgEditLocationClear(){
+$('#pgEditLocationTitle').val('');
+$('#pgEditLocationLoc').val('');
+}
+
+
+
+app.addLocation = function(LocationRec){
+// get Location records.
+var MyLocationsObj = app.getMyLocations();
+// define a record object to store the current details
+var Title = LocationRec.Title;
+Title = Title.replace(/ /g,'-');
+MyLocationsObj[Title] = LocationRec;
+localStorage['picdemo-my locations'] = JSON.stringify(MyLocationsObj);
+// clear the form fields
+pgAddLocationClear();
+//which page are we coming from, if from sign in go back to it
+var pgFrom = $('#pgAddLocation').data('from');
+switch (pgFrom) {
+case "pgSignIn":
+$.mobile.changePage('#pgSignIn', {transition: 'slide'});
+break;
+}
+};
+
+app.editLocation = function(Title){
+// get Location records.
+var MyLocationsObj = app.getMyLocations();
+// lookup specific Location
+Title = Title.replace(/ /g,'-');
+var LocationRec = MyLocationsObj[Title];
+$('#pgEditLocation').data('url', Title);
+$('#pgEditLocationDelete').data('href', Title);
+$('#pgEditLocationTitle').attr('readonly', 'readonly');
+$('#pgEditLocationTitle').attr('data-clear-btn', 'false');
+$('#pgEditLocationTitle').val(LocationRec.Title);
+$('#pgEditLocationLoc').val(LocationRec.Loc);
+};
+
+app.updateLocation = function(LocationRecNew){
+// get Location records.
+var MyLocationsObj = app.getMyLocations();
+// lookup specific Location
+var Title = LocationRecNew.Title;
+Title = Title.replace(/ /g,'-');
+var LocationRec = MyLocationsObj[Title];
+// assign new values to read record
+LocationRec.Title = LocationRecNew.Title;
+LocationRec.Loc = LocationRecNew.Loc;
+MyLocationsObj[Title] = LocationRec;
+localStorage['picdemo-my locations'] = JSON.stringify(MyLocationsObj);
+// clear the form fields
+pgEditLocationClear();
+// show the page to display after a record is deleted
+$.mobile.changePage('#pgLocation', {transition: 'slide'});
+};
+
+app.deleteLocation = function(Title){
+// clear the set values// get the Location records from localStorage
+var MyLocationsObj = app.getMyLocations();
+// delete selected Location
+delete MyLocationsObj[Title];
+// write it back to localStorage
+localStorage['picdemo-my locations'] = JSON.stringify(MyLocationsObj);
+// show the page to display after a record is deleted
+$.mobile.changePage('#pgLocation', {transition: 'slide'});
+};
+
+app.getMyLocations = function(){
+// get Location records
+var MyLocationsObj = localStorage['picdemo-my locations'];
+if (!MyLocationsObj){
+MyLocationsObj = {};
+localStorage['picdemo-my locations'] = JSON.stringify(MyLocationsObj);
+} else {
+MyLocationsObj = JSON.parse(MyLocationsObj);
+}
+return MyLocationsObj;
+};
+
+app.displayMyLocations = function(){
+// get Location records.
+var MyLocationsObj = app.getMyLocations();
+// create an empty string to contain html
+var html = '';
+// make sure your iterators are properly scoped
+var n;
+// loop over notes
+for (n in MyLocationsObj){
+var nLnk = n.replace(/-/g,' ');
+html += LocationLi.replace(/ID/g,nLnk).replace(/LINK/g,n);
+}
+$('#pgLocationList').html(LocationHdr + html).listview('refresh');
+};
+
+app.checkForMyLocationsStorage = function(){
+var MyLocationsObj = app.getMyLocations();
+// are there existing Location records?
+if (!$.isEmptyObject(MyLocationsObj)) {
+// yes there are. pass them off to be displayed
+app.displayMyLocations();
+} else {
+// nope, just show the placeholder
+$('#pgLocationList').html(LocationHdr + noLocation).listview('refresh');
+}
+};
+
 app.BindDevice = function(){
 document.addEventListener('deviceready', app.onDeviceReady, false);
 };
@@ -375,6 +689,7 @@ document.addEventListener('deviceready', app.onDeviceReady, false);
 app.onDeviceReady = function(){
 pictureSource = navigator.camera.PictureSourceType;
 destinationType = navigator.camera.DestinationType;
+isPhoneGapReady = true;
 };
 
 
@@ -391,11 +706,14 @@ app.init();
 </header>
 <div id="pgMenucontent" data-role="content" class="content">
 <ul data-role="listview" data-inset="true" id="sbItems">
-<li data-icon="false"><a data-transition="slide" id="sbSiteVisit" href="#pgSiteVisit"><h2>Site Visits</h2><p>Maintain Site Visits</p><label id="lbl"></label><img height="120" width="auto" src="appblue.png" alt="Site Visits" class="ui-li-thumb"></img></a></li>
+<li data-icon="false"><a data-transition="slide" id="sbSiteVisit" href="#pgSiteVisit"><h2>Site Visits</h2><p>Maintain Site Visits</p><label id="lbl"></label><img height="200" width="100%" src="appblue.png" alt="Site Visits" class="ui-li-thumb"></img><span class="ui-li-aside">Site Visits</span></a></li>
+<li data-icon="false"><a data-transition="slide" id="sbLocation" href="#pgLocation"><h2>My Locations</h2><p>Maintain My Locations</p><label id="lbl"></label><img height="200" width="100%" src="appblue.png" alt="My Locations" class="ui-li-thumb"></img><span class="ui-li-aside">My Locations</span></a></li>
 </ul>
 </div>
 
-</div>
+<footer id="pgMenufooter" data-role="footer" data-position="fixed">
+<h1>Powered by JQM.Show © Anele Mbanga 2015</h1>
+</footer></div>
 <div id="pgSiteVisit" data-role="page">
 
 <header id="pgSiteVisitheader" data-role="header" data-position="fixed">
@@ -411,9 +729,7 @@ app.init();
 </ul>
 </div>
 
-<footer id="pgSiteVisitfooter" data-role="footer" data-position="fixed">
-<h1>Powered by JQM.Show © Anele Mbanga 2015</h1>
-</footer></div>
+</div>
 
 <div id="pgAddSiteVisit" data-role="page">
 
@@ -429,10 +745,21 @@ app.init();
 </div>
 <div data-role="fieldcontain">
 <label for="pgAddSiteVisitPicture" id="lblpgAddSiteVisitPicture">Picture<span style='color:red;'>*</span></label>
-<img id="pgAddSiteVisitPicture" height="300" width="100%" src="Picture" alt="SiteVisitRec."></img>
+
 <div><button id="pgAddSiteVisitPictureTakePicture" class="ui-btn ui-corner-all ui-shadow">Take Picture</button>
 </div>
-<div><button id="pgAddSiteVisitPictureFromGallery" class="ui-btn ui-corner-all ui-shadow">Get From Gallery</button>
+<img id="pgAddSiteVisitPicture" height="300" width="100%" src="apps.png" alt="Apps"></img>
+<label >Map Location<span style='color:red;'>*</span></label>
+
+<div data-role="fieldcontain">
+<label for="pgAddSiteVisitPictureLat" id="lblpgAddSiteVisitPictureLat">Latitude<span style='color:red;'>*</span></label>
+<input type="text" required="required" title="" name="pgAddSiteVisitPictureLat" id="pgAddSiteVisitPictureLat" value=""></input>
+</div>
+<div data-role="fieldcontain">
+<label for="pgAddSiteVisitPictureLng" id="lblpgAddSiteVisitPictureLng">Longitude<span style='color:red;'>*</span></label>
+<input type="text" required="required" title="" name="pgAddSiteVisitPictureLng" id="pgAddSiteVisitPictureLng" value=""></input>
+</div>
+<div style="width:100%;height:300px;" id="pgAddSiteVisitPicturemap">
 </div>
 </div>
 <div><button type="submit" id="pgAddSiteVisitSave" class="ui-btn ui-corner-all ui-shadow ui-btn-b">Save SiteVisit</button>
@@ -457,13 +784,119 @@ app.init();
 </div>
 <div data-role="fieldcontain">
 <label for="pgEditSiteVisitPicture" id="lblpgEditSiteVisitPicture">Picture<span style='color:red;'>*</span></label>
-<img id="pgEditSiteVisitPicture" height="300" width="100%" src="Picture" alt="SiteVisitRec."></img>
+
 <div><button id="pgEditSiteVisitPictureTakePicture" class="ui-btn ui-corner-all ui-shadow">Take Picture</button>
 </div>
-<div><button id="pgEditSiteVisitPictureFromGallery" class="ui-btn ui-corner-all ui-shadow">Get From Gallery</button>
+<img id="pgEditSiteVisitPicture" height="300" width="100%" src="apps.png" alt="Apps"></img>
+<label >Map Location<span style='color:red;'>*</span></label>
+
+<div data-role="fieldcontain">
+<label for="pgEditSiteVisitPictureLat" id="lblpgEditSiteVisitPictureLat">Latitude<span style='color:red;'>*</span></label>
+<input type="text" required="required" title="" name="pgEditSiteVisitPictureLat" id="pgEditSiteVisitPictureLat" value=""></input>
+</div>
+<div data-role="fieldcontain">
+<label for="pgEditSiteVisitPictureLng" id="lblpgEditSiteVisitPictureLng">Longitude<span style='color:red;'>*</span></label>
+<input type="text" required="required" title="" name="pgEditSiteVisitPictureLng" id="pgEditSiteVisitPictureLng" value=""></input>
+</div>
+<div style="width:100%;height:300px;" id="pgEditSiteVisitPicturemap">
 </div>
 </div>
 <div><button type="submit" id="pgEditSiteVisitUpdate" class="ui-btn ui-corner-all ui-shadow ui-btn-b">Update SiteVisit</button>
+</div>
+</form>
+</div>
+
+</div>
+<div id="pgLocation" data-role="page">
+
+<header id="pgLocationheader" data-role="header" data-position="fixed">
+<h1>My Locations</h1>
+<a data-role="button" id="pgLocationBack" data-icon="arrow-l" class="ui-btn-left">Back</a>
+<a data-role="button" id="pgLocationNew" data-icon="plus" data-theme="b" class="ui-btn-right">New</a>
+</header>
+<div id="pgLocationcontent" data-role="content" class="content">
+<ul data-role="listview" data-inset="true" id="pgLocationList" data-autodividers="true" data-filter="true" data-filter-placeholder="Search My Locations" data-filter-reveal="false">
+<li data-role="list-divider">LocationHdr</li>
+<li id="noLocation">You have no my locations</li>
+
+</ul>
+</div>
+
+</div>
+
+<div id="pgAddLocation" data-role="page">
+
+<header id="pgAddLocationheader" data-role="header" data-position="fixed">
+<h1>Add Location</h1>
+<a data-role="button" id="pgAddLocationBack" data-icon="arrow-l" class="ui-btn-left">Back</a>
+</header>
+<div id="pgAddLocationcontent" data-role="content" class="content">
+<form action="/" method="post">
+<div data-role="fieldcontain">
+<label for="pgAddLocationTitle" id="lblpgAddLocationTitle">Title<span style='color:red;'>*</span></label>
+<input type="text" required="required" title="Enter title here." name="pgAddLocationTitle" id="pgAddLocationTitle" placeholder="Enter title here." data-clear-btn="true" value=""></input>
+</div>
+<div data-role="fieldcontain">
+<label for="pgAddLocationLoc" id="lblpgAddLocationLoc">Location</label>
+
+<div><button id="pgAddLocationLocGetLoc" class="ui-btn ui-corner-all ui-shadow">Get My Location</button>
+</div>
+<div data-role="fieldcontain">
+<label for="pgAddLocationLocLat" id="lblpgAddLocationLocLat">Latitude</label>
+<input type="text" name="pgAddLocationLocLat" id="pgAddLocationLocLat" value=""></input>
+</div>
+<div data-role="fieldcontain">
+<label for="pgAddLocationLocLng" id="lblpgAddLocationLocLng">Longitude</label>
+<input type="text" name="pgAddLocationLocLng" id="pgAddLocationLocLng" value=""></input>
+</div>
+
+<div><button id="pgAddLocationLocShowLoc" class="ui-btn ui-corner-all ui-shadow">Show My Location</button>
+</div>
+
+<div style="width:100%;height:200px;" id="pgAddLocationLocmap">
+</div>
+</div>
+<div><button type="submit" id="pgAddLocationSave" class="ui-btn ui-corner-all ui-shadow ui-btn-b">Save Location</button>
+</div>
+</form>
+</div>
+
+</div>
+
+<div data-url="Title" id="pgEditLocation" data-role="page">
+
+<header id="pgEditLocationheader" data-role="header" data-position="fixed">
+<h1>Edit Location</h1>
+<a data-role="button" id="pgEditLocationBack" data-icon="arrow-l" class="ui-btn-left">Back</a>
+<a data-role="button" data-href="ID" id="pgEditLocationDelete" data-icon="delete" data-theme="b" class="ui-btn-right">Delete</a>
+</header>
+<div id="pgEditLocationcontent" data-role="content" class="content">
+<form action="/" method="post">
+<div data-role="fieldcontain">
+<label for="pgEditLocationTitle" id="lblpgEditLocationTitle">Title<span style='color:red;'>*</span></label>
+<input readonly="readonly" data-clear-btn="true" autofocus="true" type="text" required="required" title="Enter title here." name="pgEditLocationTitle" id="pgEditLocationTitle" placeholder="Enter title here." value=""></input>
+</div>
+<div data-role="fieldcontain">
+<label for="pgEditLocationLoc" id="lblpgEditLocationLoc">Location</label>
+
+<div><button id="pgEditLocationLocGetLoc" class="ui-btn ui-corner-all ui-shadow">Get My Location</button>
+</div>
+<div data-role="fieldcontain">
+<label for="pgEditLocationLocLat" id="lblpgEditLocationLocLat">Latitude</label>
+<input type="text" name="pgEditLocationLocLat" id="pgEditLocationLocLat" value=""></input>
+</div>
+<div data-role="fieldcontain">
+<label for="pgEditLocationLocLng" id="lblpgEditLocationLocLng">Longitude</label>
+<input type="text" name="pgEditLocationLocLng" id="pgEditLocationLocLng" value=""></input>
+</div>
+
+<div><button id="pgEditLocationLocShowLoc" class="ui-btn ui-corner-all ui-shadow">Show My Location</button>
+</div>
+
+<div style="width:100%;height:200px;" id="pgEditLocationLocmap">
+</div>
+</div>
+<div><button type="submit" id="pgEditLocationUpdate" class="ui-btn ui-corner-all ui-shadow ui-btn-b">Update Location</button>
 </div>
 </form>
 </div>
