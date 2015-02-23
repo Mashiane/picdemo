@@ -6,17 +6,18 @@
 <meta name='format-detection' content='telephone=no' />
 <meta name='viewport' content='width=device-width, initial-scale=1, user-scalable=no, minimum-scale=1, maximum-scale=1'/>
 <meta name='apple-mobile-web-app-cabable' content='YES'/>
+<meta name='keywords' content='JQM.Show,JQuery Mobile,JQuery,JavaScript,Anele Mbanga,Mobile,Hybrid,HTML,CSS,Responsive,HTML5'/>
 <meta name='mobile-web-app-capable' content='yes'/>
 <meta name='apple-mobile-web-app-title' content='PicDemo'/>
 <meta name='apple-mobile-web-app-status-bar-style' content='black-translucent.'/>
 <meta name='version' content='1.00' />
 <meta name='generator' content='JQM.Show 1.00' />
-<meta name='date' content='2015-02-23 01:40' />
+<meta name='date' content='2015-02-23 15:39' />
 <meta name='copyright' content='Anele Mbanga' />
 <meta name='author' content='Anele Mbanga' />
-<meta name='email' content='' />
+<meta name='email' content='anele@mbangas.com' />
 <meta name='website' content='' />
-<meta name='description' content='' />
+<meta name='description' content='Demonstrating taking pictures with Cordova.' />
 <link rel="apple-touch-icon" href="apps.png">
 <link rel="icon" type="image/png" href="apps.png">
 <link rel="shortcut icon" type="image/png" href="apps.png">
@@ -40,6 +41,8 @@
 <script>$(function(){
 // define the application
 var PicDemo = {};
+var pictureSource;
+var destinationType;
 (function(app){
 // variable definitions go here
 var SiteVisitLi = '<li ><a href="#pgEditSiteVisit?Title=LINK">ID</a></li>';
@@ -194,7 +197,6 @@ function pgAddSiteVisitGetRec(){
 var SiteVisitRec
 SiteVisitRec = {};
 SiteVisitRec.Title = $('#pgAddSiteVisitTitle').val();
-SiteVisitRec.Description = $('#pgAddSiteVisitDescription').val();
 SiteVisitRec.Picture = $('#pgAddSiteVisitPicture').val();
 return SiteVisitRec;
 }
@@ -205,7 +207,6 @@ function pgEditSiteVisitGetRec(){
 var SiteVisitRec
 SiteVisitRec = {};
 SiteVisitRec.Title = $('#pgEditSiteVisitTitle').val();
-SiteVisitRec.Description = $('#pgEditSiteVisitDescription').val();
 SiteVisitRec.Picture = $('#pgEditSiteVisitPicture').val();
 return SiteVisitRec;
 }
@@ -213,14 +214,12 @@ return SiteVisitRec;
 //clear the forms for new data entry
 function pgAddSiteVisitClear(){
 $('#pgAddSiteVisitTitle').val('');
-$('#pgAddSiteVisitDescription').val('');
 $('#pgAddSiteVisitPicture').val('');
 }
 
 //clear the forms for new data entry
 function pgEditSiteVisitClear(){
 $('#pgEditSiteVisitTitle').val('');
-$('#pgEditSiteVisitDescription').val('');
 $('#pgEditSiteVisitPicture').val('');
 }
 
@@ -228,12 +227,18 @@ $('#pgEditSiteVisitPicture').val('');
 app.pgAddSiteVisitPictureGet = function(){
 var cameraOptions = {};
 cameraOptions.quality = 100;
-cameraOptions.destinationType = navigator.camera.DestinationType.FILE_URI;
+cameraOptions.destinationType = Camera.DestinationType.FILE_URI;
 cameraOptions.encodingType = Camera.EncodingType.PNG;
+cameraOptions.sourceType = Camera.PictureSourceType.CAMERA;
+cameraOptions.allowEdit = true;
+cameraOptions.saveToPhotoAlbum = true;
+cameraOptions.cameraDirection = Camera.Direction.BACK;
 navigator.camera.getPicture(app.pgAddSiteVisitPictureSuccess, app.pgAddSiteVisitPictureError, cameraOptions);
 };
 app.pgAddSiteVisitPictureSuccess = function(photoUri){
-document.getElementById('pgAddSiteVisitPicture').src = photoUri;
+var img = document.getElementById('pgAddSiteVisitPicture');
+img.style.display = 'block';
+img.src = photoUri;
 };
 
 app.pgAddSiteVisitPictureError = function(){
@@ -244,12 +249,18 @@ app.pgAddSiteVisitPictureError = function(){
 app.pgEditSiteVisitPictureGet = function(){
 var cameraOptions = {};
 cameraOptions.quality = 100;
-cameraOptions.destinationType = navigator.camera.DestinationType.FILE_URI;
+cameraOptions.destinationType = Camera.DestinationType.FILE_URI;
 cameraOptions.encodingType = Camera.EncodingType.PNG;
+cameraOptions.sourceType = Camera.PictureSourceType.CAMERA;
+cameraOptions.allowEdit = true;
+cameraOptions.saveToPhotoAlbum = true;
+cameraOptions.cameraDirection = Camera.Direction.BACK;
 navigator.camera.getPicture(app.pgEditSiteVisitPictureSuccess, app.pgEditSiteVisitPictureError, cameraOptions);
 };
 app.pgEditSiteVisitPictureSuccess = function(photoUri){
-document.getElementById('pgEditSiteVisitPicture').src = photoUri;
+var img = document.getElementById('pgEditSiteVisitPicture');
+img.style.display = 'block';
+img.src = photoUri;
 };
 
 app.pgEditSiteVisitPictureError = function(){
@@ -286,7 +297,6 @@ $('#pgEditSiteVisitDelete').data('href', Title);
 $('#pgEditSiteVisitTitle').attr('readonly', 'readonly');
 $('#pgEditSiteVisitTitle').attr('data-clear-btn', 'false');
 $('#pgEditSiteVisitTitle').val(SiteVisitRec.Title);
-$('#pgEditSiteVisitDescription').val(SiteVisitRec.Description);
 $('#pgEditSiteVisitPicture').val(SiteVisitRec.Picture);
 };
 
@@ -299,7 +309,6 @@ Title = Title.replace(/ /g,'-');
 var SiteVisitRec = SiteVisitsObj[Title];
 // assign new values to read record
 SiteVisitRec.Title = SiteVisitRecNew.Title;
-SiteVisitRec.Description = SiteVisitRecNew.Description;
 SiteVisitRec.Picture = SiteVisitRecNew.Picture;
 SiteVisitsObj[Title] = SiteVisitRec;
 localStorage['picdemo-site visits'] = JSON.stringify(SiteVisitsObj);
@@ -364,10 +373,8 @@ document.addEventListener('deviceready', app.onDeviceReady, false);
 };
 
 app.onDeviceReady = function(){
-var pictureSource = navigator.camera.PictureSourceType;
-var destinationType = navigator.camera.DestinationType;
-alert(pictureSource);
-alert(destinationType);
+pictureSource = navigator.camera.PictureSourceType;
+destinationType = navigator.camera.DestinationType;
 };
 
 
@@ -377,7 +384,19 @@ app.init();
 
 </script>
 </head>
-<body><div id="pgSiteVisit" data-role="page">
+<body><div id="pgMenu" data-role="page" data-themeAddAttribute="b" class="my-page">
+
+<header id="pgMenuheader" data-role="header" data-position="fixed">
+<h1>PicDemo</h1>
+</header>
+<div id="pgMenucontent" data-role="content" class="content">
+<ul data-role="listview" data-inset="true" id="sbItems">
+<li data-icon="false"><a data-transition="slide" id="sbSiteVisit" href="#pgSiteVisit"><h2>Site Visits</h2><p>Maintain Site Visits</p><label id="lbl"></label><img height="120" width="auto" src="appblue.png" alt="Site Visits" class="ui-li-thumb"></img></a></li>
+</ul>
+</div>
+
+</div>
+<div id="pgSiteVisit" data-role="page">
 
 <header id="pgSiteVisitheader" data-role="header" data-position="fixed">
 <h1>Site Visits</h1>
@@ -409,12 +428,8 @@ app.init();
 <input type="text" required="required" title="Enter title here." name="pgAddSiteVisitTitle" id="pgAddSiteVisitTitle" placeholder="Enter title here." data-clear-btn="true" value=""></input>
 </div>
 <div data-role="fieldcontain">
-<label for="pgAddSiteVisitDescription" id="lblpgAddSiteVisitDescription">Description<span style='color:red;'>*</span></label>
-<textarea name="pgAddSiteVisitDescription" id="pgAddSiteVisitDescription" placeholder="Enter description here." data-clear-btn="true" required="required"></textarea>
-</div>
-<div data-role="fieldcontain">
 <label for="pgAddSiteVisitPicture" id="lblpgAddSiteVisitPicture">Picture<span style='color:red;'>*</span></label>
-<img id="pgAddSiteVisitPicture" height="120" width="auto" src="Picture" alt="SiteVisitRec."></img>
+<img id="pgAddSiteVisitPicture" height="300" width="100%" src="Picture" alt="SiteVisitRec."></img>
 <div><button id="pgAddSiteVisitPictureTakePicture" class="ui-btn ui-corner-all ui-shadow">Take Picture</button>
 </div>
 <div><button id="pgAddSiteVisitPictureFromGallery" class="ui-btn ui-corner-all ui-shadow">Get From Gallery</button>
@@ -441,12 +456,8 @@ app.init();
 <input readonly="readonly" data-clear-btn="true" autofocus="true" type="text" required="required" title="Enter title here." name="pgEditSiteVisitTitle" id="pgEditSiteVisitTitle" placeholder="Enter title here." value=""></input>
 </div>
 <div data-role="fieldcontain">
-<label for="pgEditSiteVisitDescription" id="lblpgEditSiteVisitDescription">Description<span style='color:red;'>*</span></label>
-<textarea name="pgEditSiteVisitDescription" id="pgEditSiteVisitDescription" placeholder="Enter description here." data-clear-btn="true" required="required"></textarea>
-</div>
-<div data-role="fieldcontain">
 <label for="pgEditSiteVisitPicture" id="lblpgEditSiteVisitPicture">Picture<span style='color:red;'>*</span></label>
-<img id="pgEditSiteVisitPicture" height="120" width="auto" src="Picture" alt="SiteVisitRec."></img>
+<img id="pgEditSiteVisitPicture" height="300" width="100%" src="Picture" alt="SiteVisitRec."></img>
 <div><button id="pgEditSiteVisitPictureTakePicture" class="ui-btn ui-corner-all ui-shadow">Take Picture</button>
 </div>
 <div><button id="pgEditSiteVisitPictureFromGallery" class="ui-btn ui-corner-all ui-shadow">Get From Gallery</button>
@@ -455,18 +466,6 @@ app.init();
 <div><button type="submit" id="pgEditSiteVisitUpdate" class="ui-btn ui-corner-all ui-shadow ui-btn-b">Update SiteVisit</button>
 </div>
 </form>
-</div>
-
-</div>
-<div id="pgMenu" data-role="page" data-themeAddAttribute="b" class="my-page">
-
-<header id="pgMenuheader" data-role="header" data-position="fixed">
-<h1>PicDemo</h1>
-</header>
-<div id="pgMenucontent" data-role="content" class="content">
-<ul data-role="listview" data-inset="true" id="sbItems">
-<li data-icon="false"><a data-transition="slide" id="sbSiteVisit" href="#pgSiteVisit"><h2>Site Visits</h2><p>Maintain Site Visits</p><label id="lbl"></label><img height="120" width="auto" src="appblue.png" alt="Site Visits" class="ui-li-thumb"></img><span class="ui-li-aside">Site Visits</span></a></li>
-</ul>
 </div>
 
 </div>

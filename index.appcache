@@ -2,16 +2,33 @@ CACHE MANIFEST
 
 # Make files available offline
 index.html
+appblue.png
+poweroff.png
 apps.png
 apps.png
 apps57.png
 apps72.png
 apps80.png
 apps114.png
+app512.png
 appsIconPreComposed.png
 appsIconStartUp320by460.png
-appblue.png
-poweroff.png
+
+
+
+
+
+
+
+
+
+
+
+
+app512.png
+appsIconPreComposed.png
+apps.png
+appsIconStartUp320by460.png
 jquerym.css
 listview-grid.css
 jquery.js
