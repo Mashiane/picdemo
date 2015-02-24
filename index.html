@@ -12,7 +12,7 @@
 <meta name='apple-mobile-web-app-status-bar-style' content='black-translucent.'/>
 <meta name='version' content='1.00' />
 <meta name='generator' content='JQM.Show 1.00' />
-<meta name='date' content='2015-02-24 03:03' />
+<meta name='date' content='2015-02-24 03:46' />
 <meta name='copyright' content='Anele Mbanga' />
 <meta name='author' content='Anele Mbanga' />
 <meta name='email' content='anele@mbangas.com' />
@@ -47,8 +47,8 @@ marker {max-width: 100%; max-height: 100%;}
 </header>
 <div id="pgMenucontent" data-role="content" class="content">
 <ul data-role="listview" data-inset="true" id="sbItems">
-<li data-icon="false"><a data-transition="slide" id="sbLocation" href="#pgLocation"><h2>Locations</h2><p>Maintain Locations</p><label id="lbl"></label><img height="200" width="100%" src="appblue.png" alt="Locations" class="ui-li-thumb"></img></a></li>
-<li data-icon="false"><a data-transition="slide" id="sbPicture" href="#pgPicture"><h2>Pictures</h2><p>Maintain Pictures</p><label id="lbl"></label><img height="200" width="100%" src="appblue.png" alt="Pictures" class="ui-li-thumb"></img></a></li>
+<li data-icon="false"><a data-transition="slide" id="sbLocation" href="#pgAddLocation"><h2>Locations</h2><p>Maintain Locations</p><label id="lbl"></label><img height="200" width="100%" src="appblue.png" alt="Locations" class="ui-li-thumb"></img></a></li>
+<li data-icon="false"><a data-transition="slide" id="sbPicture" href="#pgAddPicture"><h2>Pictures</h2><p>Maintain Pictures</p><label id="lbl"></label><img height="200" width="100%" src="appblue.png" alt="Pictures" class="ui-li-thumb"></img></a></li>
 </ul>
 </div>
 
@@ -182,11 +182,11 @@ marker {max-width: 100%; max-height: 100%;}
 <input type="text" required="required" title="Enter title here." name="pgAddPictureTitle" id="pgAddPictureTitle" placeholder="Enter title here." data-clear-btn="true" value=""></input>
 </div>
 <div data-role="fieldcontain">
-<label for="pgAddPictureImage" id="lblpgAddPictureImage">Image<span style='color:red;'>*</span></label>
+<label for="pgAddPictureHomeImage" id="lblpgAddPictureHomeImage">Home Image</label>
 
-<div><button id="pgAddPictureImageTakePicture" class="ui-btn ui-corner-all ui-shadow">Take Picture</button>
+<div><button id="pgAddPictureHomeImageTakePicture" class="ui-btn ui-corner-all ui-shadow">Take Picture</button>
 </div>
-<img id="pgAddPictureImage" height="300" width="100%" src="apps.png" alt="Apps"></img>
+<img id="pgAddPictureHomeImage" height="300" width="100%" src="apps.png" alt="Apps"></img>
 </div>
 <div><button type="submit" id="pgAddPictureSave" class="ui-btn ui-corner-all ui-shadow ui-btn-b">Save Picture</button>
 </div>
@@ -209,11 +209,11 @@ marker {max-width: 100%; max-height: 100%;}
 <input readonly="readonly" data-clear-btn="true" autofocus="true" type="text" required="required" title="Enter title here." name="pgEditPictureTitle" id="pgEditPictureTitle" placeholder="Enter title here." value=""></input>
 </div>
 <div data-role="fieldcontain">
-<label for="pgEditPictureImage" id="lblpgEditPictureImage">Image<span style='color:red;'>*</span></label>
+<label for="pgEditPictureHomeImage" id="lblpgEditPictureHomeImage">Home Image</label>
 
-<div><button id="pgEditPictureImageTakePicture" class="ui-btn ui-corner-all ui-shadow">Take Picture</button>
+<div><button id="pgEditPictureHomeImageTakePicture" class="ui-btn ui-corner-all ui-shadow">Take Picture</button>
 </div>
-<img id="pgEditPictureImage" height="300" width="100%" src="apps.png" alt="Apps"></img>
+<img id="pgEditPictureHomeImage" height="300" width="100%" src="apps.png" alt="Apps"></img>
 </div>
 <div><button type="submit" id="pgEditPictureUpdate" class="ui-btn ui-corner-all ui-shadow ui-btn-b">Update Picture</button>
 </div>
@@ -282,11 +282,11 @@ var noPicture = '<li id="noPicture">You have no pictures</li>';
 
 app.init = function(){
 FastClick.attach(document.body);
-app.BindDevice();
 app.Locationsbindings();
 app.checkForLocationsStorage();
 app.Picturesbindings();
 app.checkForPicturesStorage();
+app.BindDevice();
 $('#msgboxyes').on('click', function(e){
 e.preventDefault();
 e.stopImmediatePropagation();
@@ -499,7 +499,7 @@ $('#pgAddLocationLocLng').val(longitude);
 var mapObj = document.getElementById('pgAddLocationLocmap');
 var img = new Image();
 img.class = 'marker';
-img.src = "http://maps.googleapis.com/maps/api/staticmap?center=" + latitude + "," + longitude + "&maptype=roadmap&zoom=15&size=600x300&sensor=false";
+img.src = "http://maps.googleapis.com/maps/api/staticmap?center=" + latitude + "," + longitude + "&maptype=roadmap&zoom=15&size=300x300&sensor=false";
 mapObj.innerHTML = '<p>Your Position</p>';
 mapObj.appendChild(img);
 };
@@ -530,7 +530,7 @@ app.pgAddLocationLocShowMap = function(latitude,longitude){
 var mapObj = document.getElementById('pgAddLocationLocmap');
 var img = new Image();
 img.class = 'marker';
-img.src = "http://maps.googleapis.com/maps/api/staticmap?center=" + latitude + "," + longitude + "&maptype=roadmap&zoom=15&size=600x300&sensor=false";
+img.src = "http://maps.googleapis.com/maps/api/staticmap?center=" + latitude + "," + longitude + "&maptype=roadmap&zoom=15&size=300x300&sensor=false";
 mapObj.innerHTML = '<p>Your Position</p>';
 mapObj.appendChild(img);
 };
@@ -572,7 +572,7 @@ $('#pgEditLocationLocLng').val(longitude);
 var mapObj = document.getElementById('pgEditLocationLocmap');
 var img = new Image();
 img.class = 'marker';
-img.src = "http://maps.googleapis.com/maps/api/staticmap?center=" + latitude + "," + longitude + "&maptype=roadmap&zoom=15&size=600x300&sensor=false";
+img.src = "http://maps.googleapis.com/maps/api/staticmap?center=" + latitude + "," + longitude + "&maptype=roadmap&zoom=15&size=300x300&sensor=false";
 mapObj.innerHTML = '<p>Your Position</p>';
 mapObj.appendChild(img);
 };
@@ -603,7 +603,7 @@ app.pgEditLocationLocShowMap = function(latitude,longitude){
 var mapObj = document.getElementById('pgEditLocationLocmap');
 var img = new Image();
 img.class = 'marker';
-img.src = "http://maps.googleapis.com/maps/api/staticmap?center=" + latitude + "," + longitude + "&maptype=roadmap&zoom=15&size=600x300&sensor=false";
+img.src = "http://maps.googleapis.com/maps/api/staticmap?center=" + latitude + "," + longitude + "&maptype=roadmap&zoom=15&size=300x300&sensor=false";
 mapObj.innerHTML = '<p>Your Position</p>';
 mapObj.appendChild(img);
 };
@@ -806,16 +806,16 @@ $('#msgboxno').data('topage', 'pgEditPicture');
 $.mobile.changePage('#msgbox', {transition: 'pop'});
 });
 
-$('#pgAddPictureImageTakePicture').on('click', function(e){
+$('#pgAddPictureHomeImageTakePicture').on('click', function(e){
 e.preventDefault();
 e.stopImmediatePropagation();
-app.pgAddPictureImageGet();
+app.pgAddPictureHomeImageGet();
 });
 
-$('#pgEditPictureImageTakePicture').on('click', function(e){
+$('#pgEditPictureHomeImageTakePicture').on('click', function(e){
 e.preventDefault();
 e.stopImmediatePropagation();
-app.pgEditPictureImageGet();
+app.pgEditPictureHomeImageGet();
 });
 
 
@@ -827,7 +827,7 @@ function pgAddPictureGetRec(){
 var PictureRec
 PictureRec = {};
 PictureRec.Title = $('#pgAddPictureTitle').val();
-PictureRec.Image = $('#pgAddPictureImage').val();
+PictureRec.HomeImage = $('#pgAddPictureHomeImage').val();
 return PictureRec;
 }
 
@@ -837,24 +837,24 @@ function pgEditPictureGetRec(){
 var PictureRec
 PictureRec = {};
 PictureRec.Title = $('#pgEditPictureTitle').val();
-PictureRec.Image = $('#pgEditPictureImage').val();
+PictureRec.HomeImage = $('#pgEditPictureHomeImage').val();
 return PictureRec;
 }
 
 //clear the forms for new data entry
 function pgAddPictureClear(){
 $('#pgAddPictureTitle').val('');
-$('#pgAddPictureImage').val('');
+$('#pgAddPictureHomeImage').val('');
 }
 
 //clear the forms for new data entry
 function pgEditPictureClear(){
 $('#pgEditPictureTitle').val('');
-$('#pgEditPictureImage').val('');
+$('#pgEditPictureHomeImage').val('');
 }
 
 //set camera options
-app.pgAddPictureImageGet = function(){
+app.pgAddPictureHomeImageGet = function(){
 var cameraOptions = {};
 cameraOptions.quality = 100;
 cameraOptions.destinationType = Camera.DestinationType.FILE_URI;
@@ -863,20 +863,20 @@ cameraOptions.sourceType = Camera.PictureSourceType.CAMERA;
 cameraOptions.allowEdit = true;
 cameraOptions.saveToPhotoAlbum = true;
 cameraOptions.cameraDirection = Camera.Direction.BACK;
-navigator.camera.getPicture(app.pgAddPictureImageSuccess, app.pgAddPictureImageError, cameraOptions);
+navigator.camera.getPicture(app.pgAddPictureHomeImageSuccess, app.pgAddPictureHomeImageError, cameraOptions);
 };
-app.pgAddPictureImageSuccess = function(photoUri){
-var img = document.getElementById('pgAddPictureImage');
+app.pgAddPictureHomeImageSuccess = function(photoUri){
+var img = document.getElementById('pgAddPictureHomeImage');
 img.style.display = 'block';
 img.src = photoUri;
 };
 
-app.pgAddPictureImageError = function(){
+app.pgAddPictureHomeImageError = function(){
 };
 
 
 //set camera options
-app.pgEditPictureImageGet = function(){
+app.pgEditPictureHomeImageGet = function(){
 var cameraOptions = {};
 cameraOptions.quality = 100;
 cameraOptions.destinationType = Camera.DestinationType.FILE_URI;
@@ -885,15 +885,15 @@ cameraOptions.sourceType = Camera.PictureSourceType.CAMERA;
 cameraOptions.allowEdit = true;
 cameraOptions.saveToPhotoAlbum = true;
 cameraOptions.cameraDirection = Camera.Direction.BACK;
-navigator.camera.getPicture(app.pgEditPictureImageSuccess, app.pgEditPictureImageError, cameraOptions);
+navigator.camera.getPicture(app.pgEditPictureHomeImageSuccess, app.pgEditPictureHomeImageError, cameraOptions);
 };
-app.pgEditPictureImageSuccess = function(photoUri){
-var img = document.getElementById('pgEditPictureImage');
+app.pgEditPictureHomeImageSuccess = function(photoUri){
+var img = document.getElementById('pgEditPictureHomeImage');
 img.style.display = 'block';
 img.src = photoUri;
 };
 
-app.pgEditPictureImageError = function(){
+app.pgEditPictureHomeImageError = function(){
 };
 
 
@@ -929,7 +929,7 @@ $('#pgEditPictureDelete').data('href', Title);
 $('#pgEditPictureTitle').attr('readonly', 'readonly');
 $('#pgEditPictureTitle').attr('data-clear-btn', 'false');
 $('#pgEditPictureTitle').val(PictureRec.Title);
-$('#pgEditPictureImage').val(PictureRec.Image);
+$('#pgEditPictureHomeImage').val(PictureRec.HomeImage);
 };
 
 app.updatePicture = function(PictureRecNew){
@@ -941,7 +941,7 @@ Title = Title.replace(/ /g,'-');
 var PictureRec = PicturesObj[Title];
 // assign new values to read record
 PictureRec.Title = PictureRecNew.Title;
-PictureRec.Image = PictureRecNew.Image;
+PictureRec.HomeImage = PictureRecNew.HomeImage;
 PicturesObj[Title] = PictureRec;
 localStorage['picdemo-pictures'] = JSON.stringify(PicturesObj);
 // clear the form fields
